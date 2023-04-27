@@ -25,9 +25,23 @@ function bitly_url() {
 }
 
 
+# E.g. decrypt_password <encrypted password>
+function decrypt_password() {
+  grep "^$1=" $password_file | cut -d= -f2
+}
+
+
 # E.g. encode_uri https://www.gogole.com?q=a b c
 function encode_uri() {
   echo $@ | sed -e 's/ /%20/g'
+}
+
+
+# E.g. encrypt_password  # will encrypt your current password and save the mapping into password file.
+function encrypt_password() {
+  e_password=$(echo $password | md5)
+  grep "^$e_password=" $password_file >/dev/null 2>&1 && sed -e "s/^$e_password=.*$/$e_password=$password/" $password_file || echo "$e_password=$password" >> $password_file
+  echo "Encrypt password done!"
 }
 
 
@@ -78,7 +92,9 @@ EOF
 }
 
 
-# E.g. keep_alive -s https://aws.gilmoreglobal.com/login/en https://aws.gilmoreglobal.com/logout https://aws.gilmoreglobal.com/en
+# E.g. -s keep_alive https://aws.gilmoreglobal.com/login/en https://aws.gilmoreglobal.com/logout https://aws.gilmoreglobal.com/en
+# Note:
+# you could run it in background by putting "username=<username> e_password=<encrypted password> ./useful_tool_collection.sh -s keep_alive <url 1> <url 2> <url>" into your crontab.
 function keep_alive() {
   [ $# -lt 3 ] && echo "Need to assign login/logout/homepage URIs, exit!" && return 1
   token_file=/tmp/token.txt
@@ -88,6 +104,7 @@ function keep_alive() {
   home_url="$3"
 
   [ -z "$username" ] && read -p 'username: ' username
+  [ ! -z "$e_password" ] && password=$(decrypt_password $e_password)
   [ -z "$password" ] && read -s -p 'password: ' password
 
   curl -i -L -X GET -c $token_file -o ${output_file} $home_url && \
@@ -96,7 +113,7 @@ function keep_alive() {
     [ -z "$login_url" ] && echo 'Error fetch action from page, exit!' && exit 1
   curl -i -X POST -b $token_file -c $token_file -o ${output_file} -d username=$username -d password=$password -d _token=$_token $login_url
   curl -i -L -X GET -b $token_file -o ${output_file} $home_url
-  open ${output_file}
+  ! $is_silence && open ${output_file}
   curl -i -L -X GET -b $token_file -o ${output_file} $logout_url
 }
 
@@ -108,4 +125,7 @@ function readme() {
 
 
 # main
+password_file=${0/.sh/.password}
+is_silence=false
+[ "$1" == '-s' ] && is_silence=true && shift
 [ $# -eq 0 ] && help || $@
