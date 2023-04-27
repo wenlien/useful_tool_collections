@@ -2,12 +2,11 @@
 # This is a useful tool collections.
 
 
-# E.g.
-#   bitly_url https://www.google.com
+# E.g. bitly_url https://www.google.com
 # PS. Bitly profile (~/.bitly):
 #   BITLY_GUID=<put your bitly guid in here>
 #   BITLY_TOKEN=<put your bitly token in here>
-function bitly_url () {
+function bitly_url() {
   [ ! -f ~/.bitly ] && echo "Cannot find key for bitly API call!" && exit 1
   source ~/.bitly
 
@@ -26,17 +25,15 @@ function bitly_url () {
 }
 
 
-# E.g.
-#   encode_uri https://www.gogole.com?q=a b c
-function encode_uri () {
+# E.g. encode_uri https://www.gogole.com?q=a b c
+function encode_uri() {
   echo $@ | sed -e 's/ /%20/g'
 }
 
 
-# E.g.
-#   gen_qrcode 200x200 https://www.google.com
-#   gen_qrcode https://www.google.com  # default image size is 200x200
-function gen_qrcode () {
+# E.g. gen_qrcode 200x200 https://www.google.com
+# E.g. gen_qrcode https://www.google.com  # default image size is 200x200
+function gen_qrcode() {
   gen_qrcode_url_template="https://api.qrserver.com/v1/create-qr-code/?size=__img_size__&data=__resource_uri__"
   output_file='/tmp/qrcode.png'
   is_quiet=false
@@ -65,16 +62,50 @@ function gen_qrcode () {
 }
 
 
-function help () {
+# E.g. help
+function help() {
   cat <<EOF
 Usage:
+  $0 -s  # silence mode
+  $0 help  # help manual
+  $0 readme  # show readme info
   $0 <function name> <arguements>
-E.g.
-  $0 bitly_url https://www.google.com
 Function list:
-$(grep '^function [^_]' $0 | cut -d ' ' -f2 | sed -e 's/^/  /' | sort)
+$(grep '^function [^_]' $0 | cut -d ' ' -f2 | cut -d '(' -f1 | sed -e 's/^/  /' | sort)
+E.g.
+$(cat $0 | grep '^# E.g. ' | sed -e "s|^# E.g. |  $0 |")
 EOF
 }
+
+
+# E.g. keep_alive -s https://aws.gilmoreglobal.com/login/en https://aws.gilmoreglobal.com/logout https://aws.gilmoreglobal.com/en
+function keep_alive() {
+  [ $# -lt 3 ] && echo "Need to assign login/logout/homepage URIs, exit!" && return 1
+  token_file=/tmp/token.txt
+  output_file=/tmp/output.html
+  login_url="$1"
+  logout_url="$2"
+  home_url="$3"
+
+  [ -z "$username" ] && read -p 'username: ' username
+  [ -z "$password" ] && read -s -p 'password: ' password
+
+  curl -i -L -X GET -c $token_file -o ${output_file} $home_url && \
+    _token=$(grep _token ${output_file} | cut -d\" -f6) && \
+    login_url=$(grep action ${output_file} | grep https | cut -d\" -f8) && \
+    [ -z "$login_url" ] && echo 'Error fetch action from page, exit!' && exit 1
+  curl -i -X POST -b $token_file -c $token_file -o ${output_file} -d username=$username -d password=$password -d _token=$_token $login_url
+  curl -i -L -X GET -b $token_file -o ${output_file} $home_url
+  open ${output_file}
+  curl -i -L -X GET -b $token_file -o ${output_file} $logout_url
+}
+
+
+# E.g. readme
+function readme() {
+  open $(dirname $0)/README.md
+}
+
 
 # main
 $@
