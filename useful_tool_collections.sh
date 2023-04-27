@@ -86,17 +86,18 @@ Usage:
   $0 readme  # show readme info
   $0 <function name> <arguements>
 Function list:
-$(grep '^function [^_]' $0 | cut -d ' ' -f2 | cut -d '(' -f1 | sed -e 's/^/  /' | sort)
+$(grep '^function [^_]' $0 ${0/.sh/.plugins} | cut -d ' ' -f2 | cut -d '(' -f1 | sed -e 's/^/  /' | sort)
 E.g.
-$(cat $0 | grep '^# E.g. ' | sed -e "s|^# E.g. |  $0 |")
+$(cat $0 ${0/.sh/.plugins} | grep '^# E.g. ' | sed -e "s|^# E.g. |  $0 |" | sort)
 EOF
 }
 
 
-# E.g. -s keep_alive https://aws.gilmoreglobal.com/login/en https://aws.gilmoreglobal.com/logout https://aws.gilmoreglobal.com/en
+# E.g. keep_alive -s https://aws.gilmoreglobal.com/login/en https://aws.gilmoreglobal.com/logout https://aws.gilmoreglobal.com/en
 # Note:
 # you could run it in background by putting "username=<username> e_password=<encrypted password> ./useful_tool_collection.sh -s keep_alive <url 1> <url 2> <url>" into your crontab.
 function keep_alive() {
+  [ "$1" == '-s' ] && is_silence=true && shift
   [ $# -lt 3 ] && echo "Need to assign login/logout/homepage URIs, exit!" && return 1
   token_file=/tmp/token.txt
   output_file=/tmp/output.html
@@ -115,7 +116,7 @@ function keep_alive() {
   curl -i -X POST -b $token_file -c $token_file -o ${output_file} -d username=$username -d password=$password -d _token=$_token $login_url
   curl -i -L -X GET -b $token_file -o ${output_file} $home_url
   ! $is_silence && open ${output_file}
-  curl -i -L -X GET -b $token_file -o ${output_file} $logout_url
+  curl -i -L -X GET -b $token_file -o /dev/null $logout_url
 }
 
 
@@ -125,8 +126,14 @@ function readme() {
 }
 
 
+# E.g. vi [password/plugins/sh]
+function vi() {
+  vim ${0/.sh}.${1:-sh}
+}
+
+
 # main
 password_file=${0/.sh/.password}
 is_silence=false
-[ "$1" == '-s' ] && is_silence=true && shift
+[ -f ${0/.sh/.plugins} ] && echo loading ${0/.sh/.plugins} && source ${0/.sh/.plugins}
 [ $# -eq 0 ] && help || $@
