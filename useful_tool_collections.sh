@@ -50,6 +50,7 @@ function encrypt_password() {
 function gen_qrcode() {
   gen_qrcode_url_template="https://api.qrserver.com/v1/create-qr-code/?size=__img_size__&data=__resource_uri__"
   output_file='/tmp/qrcode.png'
+  img_size='200x200'
   is_quiet=false
   [ $# -eq 1 ] && set $img_size "$1"
   [ $# -gt 1 ] && img_size="$1" && shift && resource_uri="$@" && is_quiet=true
