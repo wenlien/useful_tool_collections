@@ -81,7 +81,6 @@ function gen_qrcode() {
 function help() {
   cat <<EOF
 Usage:
-  $0 -s  # silence mode
   $0 help  # help manual
   $0 readme  # show readme info
   $0 <function name> <arguements>
@@ -100,10 +99,11 @@ function _is_function() {
 }
 
 
-# E.g. keep_alive -s https://aws.gilmoreglobal.com/login/en https://aws.gilmoreglobal.com/logout https://aws.gilmoreglobal.com/en
+# E.g. keep_alive -s https://aws.gilmoreglobal.com/login/en https://aws.gilmoreglobal.com/logout https://aws.gilmoreglobal.com/en  # -s: silence mode
 # Note:
 # you could run it in background by putting "username=<username> e_password=<encrypted password> ./useful_tool_collection.sh -s keep_alive <url 1> <url 2> <url>" into your crontab.
 function keep_alive() {
+  is_silence=false
   [ "$1" == '-s' ] && is_silence=true && shift
   [ $# -lt 3 ] && echo "Need to assign login/logout/homepage URIs, exit!" && return 1
   token_file=/tmp/token.txt
@@ -141,7 +141,6 @@ function vi() {
 
 # main
 password_file=${0/.sh/.password}
-is_silence=false
 [ -f ${0/.sh/.plugins} ] && echo "Loading ${0/.sh/.plugins}" && source ${0/.sh/.plugins}
 [ $# -eq 0 ] && help && exit 1
 ! _is_function $1 && echo "Function ($1) not found!" && exit 1
