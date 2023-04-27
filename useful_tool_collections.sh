@@ -88,8 +88,15 @@ Usage:
 Function list:
 $(grep '^function [^_]' $0 ${0/.sh/.plugins} | cut -d ' ' -f2 | cut -d '(' -f1 | sed -e 's/^/  /' | sort)
 E.g.
-$(cat $0 ${0/.sh/.plugins} | grep '^# E.g. ' | sed -e "s|^# E.g. |  $0 |" | sort)
+$(cat $0 ${0/.sh/.plugins} | grep '^# E.g. [^_]' | sed -e "s|^# E.g. |  $0 |" | sort)
 EOF
+}
+
+
+# Hidden function, check if it is a function.
+# E.g. _is_function
+function _is_function() {
+  [ ! -z "$1" ] && typeset -F $1 >/dev/null 2>&1 || return 1
 }
 
 
@@ -135,5 +142,7 @@ function vi() {
 # main
 password_file=${0/.sh/.password}
 is_silence=false
-[ -f ${0/.sh/.plugins} ] && echo loading ${0/.sh/.plugins} && source ${0/.sh/.plugins}
-[ $# -eq 0 ] && help || $@
+[ -f ${0/.sh/.plugins} ] && echo "Loading ${0/.sh/.plugins}" && source ${0/.sh/.plugins}
+[ $# -eq 0 ] && help && exit 1
+! _is_function $1 && echo "Function ($1) not found!" && exit 1
+$@
