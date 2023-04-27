@@ -108,4 +108,4 @@ function readme() {
 
 
 # main
-$@
+[ $# -eq 0 ] && help || $@
