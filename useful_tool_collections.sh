@@ -82,13 +82,14 @@ function gen_qrcode() {
 function help() {
   cat <<EOF
 Usage:
-  $0 help  # help manual
+  $0 help    # help manual
   $0 readme  # show readme info
+  $0 vi      # edit $0 script
   $0 <function name> <arguements>
 Function list:
 $(grep '^function [^_]' $0 ${0/.sh/.plugins} | cut -d ' ' -f2 | cut -d '(' -f1 | sed -e 's/^/  /' | sort)
 E.g.
-$(cat $0 ${0/.sh/.plugins} | grep '^# E.g. [^_]' | sed -e "s|^# E.g. |  $0 |" | sort)
+$(cat $0 ${0/.sh/.plugins} | grep '^# E.g. [^_]' | sed -e "s|^#[ ]*E.g.[ ]*|  $0 |" | egrep -v "  $0 (help|readme|vi)( |$)" | sort)
 EOF
 }
 
