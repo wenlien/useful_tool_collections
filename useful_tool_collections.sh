@@ -108,7 +108,7 @@ function _is_function() {
 
 # E.g. keep_alive -s https://aws.gilmoreglobal.com/login/en https://aws.gilmoreglobal.com/logout https://aws.gilmoreglobal.com/en  # -s: silence mode
 # Note:
-# you could run it in background by putting "username=<username> e_password=<encrypted password> ./useful_tool_collection.sh -s keep_alive <url 1> <url 2> <url>" into your crontab.
+# you could run it in background by putting "username=<username> e_password=<encrypted password> ./useful_tool_collection.sh keep_alive -s <url 1> <url 2> <url>" into your crontab.
 function keep_alive() {
   is_silence=false
   [ "$1" == '-s' ] && is_silence=true && shift
