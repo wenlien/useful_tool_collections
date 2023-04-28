@@ -39,8 +39,9 @@ function encode_uri() {
 
 # E.g. encrypt_password  # will encrypt your current password and save the mapping into password file.
 function encrypt_password() {
+  password=${1:-$password} && [ -z "$password" ] && echo "password not found!" && return 1
   e_password=$(echo $password | md5)
-  grep "^$e_password=" $password_file >/dev/null 2>&1 && sed -e "s/^$e_password=.*$/$e_password=$password/" $password_file || echo "$e_password=$password" >> $password_file
+  grep "^$e_password=" $password_file >/dev/null 2>&1 && sed -i '' -e "s/^$e_password=.*$/$e_password=$password/" $password_file || echo "$e_password=$password" >> $password_file
   echo "Encrypt password done!"
 }
 
@@ -89,6 +90,12 @@ $(grep '^function [^_]' $0 ${0/.sh/.plugins} | cut -d ' ' -f2 | cut -d '(' -f1 |
 E.g.
 $(cat $0 ${0/.sh/.plugins} | grep '^# E.g. [^_]' | sed -e "s|^# E.g. |  $0 |" | sort)
 EOF
+}
+
+
+# E.g. list_password
+function list_password() {
+  cat $password_file
 }
 
 
