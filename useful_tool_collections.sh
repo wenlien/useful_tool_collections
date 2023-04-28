@@ -80,6 +80,7 @@ function gen_qrcode() {
 
 # E.g. help
 function help() {
+  excluded_func_regex='(help|readme|vi)( |$)'
   cat <<EOF
 Usage:
   $0 help    # help manual
@@ -87,9 +88,9 @@ Usage:
   $0 vi      # edit $0 script
   $0 <function name> <arguements>
 Function list:
-$(grep '^function [^_]' $0 ${0/.sh/.plugins} | cut -d ' ' -f2 | cut -d '(' -f1 | sed -e 's/^/  /' | sort)
+$(grep '^function [^_]' $0 ${0/.sh/.plugins} | cut -d ' ' -f2 | cut -d '(' -f1 | egrep -v "$excluded_func_regex" | sed -e 's/^/  /' | sort)
 E.g.
-$(cat $0 ${0/.sh/.plugins} | grep '^# E.g. [^_]' | sed -e "s|^#[ ]*E.g.[ ]*|  $0 |" | egrep -v "  $0 (help|readme|vi)( |$)" | sort)
+$(cat $0 ${0/.sh/.plugins} | grep '^# E.g. [^_]' | sed -e "s|^#[ ]*E.g.[ ]*|  $0 |" | egrep -v "  $0 $excluded_func_regex" | sort)
 EOF
 }
 
