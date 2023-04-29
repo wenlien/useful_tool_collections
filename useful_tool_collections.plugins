@@ -1,9 +1,0 @@
-# Naming convention of plugin functions
-# 1. no space before syntax 'function'
-# 2. put help message of function with the following pattern:
-#    '# E.g. <function name> <options/arguments>'
-#
-# E.g. helloworld_plugin
-function helloworld_plugin() {
-  echo 'Hello World, plugin!'
-}

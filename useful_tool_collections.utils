@@ -1,0 +1,17 @@
+# Hidden function, check if it is a function.
+# E.g. _is_function
+function _is_function() {
+  [ ! -z "$1" ] && typeset -F $1 >/dev/null 2>&1 || return 1
+}
+
+
+# E.g. readme
+function readme() {
+  open $(dirname $0)/README.md
+}
+
+
+# E.g. vi [custom/password/utils/sh]
+function vi() {
+  vim ${0/.sh}.${1:-sh}
+}

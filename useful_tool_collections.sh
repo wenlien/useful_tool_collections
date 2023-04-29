@@ -88,9 +88,9 @@ Usage:
   $0 vi      # edit $0 script
   $0 <function name> <arguements>
 Function list:
-$(grep '^function [^_]' $0 $custom_file $plugins_file | cut -d ' ' -f2 | cut -d '(' -f1 | egrep -v "$excluded_func_regex" | sed -e 's/^/  /' | sort)
+$(grep '^function [^_]' $0 $custom_file $utils_file | cut -d ' ' -f2 | cut -d '(' -f1 | egrep -v "$excluded_func_regex" | sed -e 's/^/  /' | sort)
 E.g.
-$(cat $0 $custom_file $plugins_file | grep '^# E.g. [^_]' | sed -e "s|^#[ ]*E.g.[ ]*|  $0 |" | egrep -v "  $0 $excluded_func_regex" | sort)
+$(cat $0 $custom_file $utils_file | grep '^# E.g. [^_]' | sed -e "s|^#[ ]*E.g.[ ]*|  $0 |" | egrep -v "  $0 $excluded_func_regex" | sort)
 EOF
 }
 
@@ -98,13 +98,6 @@ EOF
 # E.g. list_password
 function list_password() {
   cat $password_file
-}
-
-
-# Hidden function, check if it is a function.
-# E.g. _is_function
-function _is_function() {
-  [ ! -z "$1" ] && typeset -F $1 >/dev/null 2>&1 || return 1
 }
 
 
@@ -136,24 +129,12 @@ function keep_alive() {
 }
 
 
-# E.g. readme
-function readme() {
-  open $(dirname $0)/README.md
-}
-
-
-# E.g. vi [custom/password/plugins/sh]
-function vi() {
-  vim ${0/.sh}.${1:-sh}
-}
-
-
 # main
 password_file=${0/.sh/.password}
 custom_file=${0/.sh/.custom}
-plugins_file=${0/.sh/.plugins}
+utils_file=${0/.sh/.utils}
 [ -f $custom_file ] && echo "Loading $custom_file" && source $custom_file
-[ -f $plugins_file ] && echo "Loading $plugins_file" && source $plugins_file
+[ -f $utils_file ] && echo "Loading $utils_file" && source $utils_file
 [ $# -eq 0 ] && help && exit 1
 ! _is_function $1 && echo "Function ($1) not found!" && exit 1
 $@

@@ -1,0 +1,21 @@
+# The useful_tool_collections.custom file is for custom functions, and won't be updated from repository.
+# Please check if the file exists in .gitignore
+#
+# Naming convention of custom functions
+# 1. no space before syntax 'function'
+# 2. put help message of function with the following pattern:
+#    '# E.g. <function name> <options/arguments>'
+#    '# E.g. _<function name> <options/arguments>'
+#    PS. the private methods (w/ leading "_") won't be shown in help manual
+
+
+# E.g. helloworld_public_custom
+function helloworld_public_custom() {
+  echo 'Hello World, public custom!'
+}
+
+
+# E.g. _helloworld_private_custom
+function _helloworld_private_custom() {
+  echo 'Hello World, private custom!'
+}
