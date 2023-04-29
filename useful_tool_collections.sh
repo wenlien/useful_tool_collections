@@ -88,9 +88,9 @@ Usage:
   $0 vi      # edit $0 script
   $0 <function name> <arguements>
 Function list:
-$(grep '^function [^_]' $0 ${0/.sh/.plugins} | cut -d ' ' -f2 | cut -d '(' -f1 | egrep -v "$excluded_func_regex" | sed -e 's/^/  /' | sort)
+$(grep '^function [^_]' $0 $custom_file $plugins_file | cut -d ' ' -f2 | cut -d '(' -f1 | egrep -v "$excluded_func_regex" | sed -e 's/^/  /' | sort)
 E.g.
-$(cat $0 ${0/.sh/.plugins} | grep '^# E.g. [^_]' | sed -e "s|^#[ ]*E.g.[ ]*|  $0 |" | egrep -v "  $0 $excluded_func_regex" | sort)
+$(cat $0 $custom_file $plugins_file | grep '^# E.g. [^_]' | sed -e "s|^#[ ]*E.g.[ ]*|  $0 |" | egrep -v "  $0 $excluded_func_regex" | sort)
 EOF
 }
 
@@ -142,7 +142,7 @@ function readme() {
 }
 
 
-# E.g. vi [password/plugins/sh]
+# E.g. vi [custom/password/plugins/sh]
 function vi() {
   vim ${0/.sh}.${1:-sh}
 }
@@ -150,7 +150,10 @@ function vi() {
 
 # main
 password_file=${0/.sh/.password}
-[ -f ${0/.sh/.plugins} ] && echo "Loading ${0/.sh/.plugins}" && source ${0/.sh/.plugins}
+custom_file=${0/.sh/.custom}
+plugins_file=${0/.sh/.plugins}
+[ -f $custom_file ] && echo "Loading $custom_file" && source $custom_file
+[ -f $plugins_file ] && echo "Loading $plugins_file" && source $plugins_file
 [ $# -eq 0 ] && help && exit 1
 ! _is_function $1 && echo "Function ($1) not found!" && exit 1
 $@
