@@ -81,6 +81,7 @@ function gen_qrcode() {
 # E.g. help
 function help() {
   excluded_func_regex='(help|readme|vi)( |$)'
+  _custom_file_options=$([ -f $custom_file ] && echo $custom_file)
   cat <<EOF
 Usage:
   $0 help    # help manual
@@ -88,9 +89,9 @@ Usage:
   $0 vi      # edit $0 script
   $0 <function name> <arguements>
 Function list:
-$(grep '^function [^_]' $0 $custom_file $utils_file | cut -d ' ' -f2 | cut -d '(' -f1 | egrep -v "$excluded_func_regex" | sed -e 's/^/  /' | sort)
+$(grep '^function [^_]' $0 $_custom_file_options | cut -d ' ' -f2 | cut -d '(' -f1 | egrep -v "$excluded_func_regex" | sed -e 's/^/  /' | sort)
 E.g.
-$(cat $0 $custom_file $utils_file | grep '^# E.g. [^_]' | sed -e "s|^#[ ]*E.g.[ ]*|  $0 |" | egrep -v "  $0 $excluded_func_regex" | sort)
+$(cat $0 $_custom_file_options | grep '^# E.g. [^_]' | sed -e "s|^#[ ]*E.g.[ ]*|  $0 |" | egrep -v "  $0 $excluded_func_regex" | sort)
 EOF
 }
 
@@ -130,11 +131,16 @@ function keep_alive() {
 
 
 # main
-password_file=${0/.sh/.password}
 custom_file=${0/.sh/.custom}
+custom_file_done=$custom_file.done
+password_file=${0/.sh/.password}
 utils_file=${0/.sh/.utils}
-[ -f $custom_file ] && echo "Loading $custom_file" && source $custom_file
+
 [ -f $utils_file ] && echo "Loading $utils_file" && source $utils_file
+[ ! -f $custom_file_done ] && _gen_custom_file && touch $custom_file_done # generate custom file (once)
+[ -f $custom_file ] && echo "Loading $custom_file" && source $custom_file
+
 [ $# -eq 0 ] && help && exit 1
 ! _is_function $1 && echo "Function ($1) not found!" && exit 1
+
 $@
