@@ -5,5 +5,5 @@
 #
 # E.g. helloworld_plugin
 function helloworld_plugin() {
-  echo 'Hello World!'
+  echo 'Hello World, plugin!'
 }
