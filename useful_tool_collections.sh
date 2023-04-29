@@ -104,7 +104,8 @@ function list_password() {
 
 # E.g. keep_alive -s https://aws.gilmoreglobal.com/login/en https://aws.gilmoreglobal.com/logout https://aws.gilmoreglobal.com/en  # -s: silence mode
 # Note:
-# you could run it in background by putting "username=<username> e_password=<encrypted password> ./useful_tool_collection.sh keep_alive -s <url 1> <url 2> <url>" into your crontab.
+# you could run it in background by putting the following into your crontab.
+# username=<username> e_password=<encrypted password> ./useful_tool_collection.sh keep_alive -s <login url> <logout url> <home url>
 function keep_alive() {
   is_silence=false
   [ "$1" == '-s' ] && is_silence=true && shift
