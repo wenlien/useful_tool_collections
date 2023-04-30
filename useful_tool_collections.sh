@@ -7,7 +7,7 @@
 #   BITLY_GUID=<put your bitly guid in here>
 #   BITLY_TOKEN=<put your bitly token in here>
 function bitly_url() {
-  [ ! -f ~/.bitly ] && echo "Cannot find key for bitly API call!" && exit 1
+  [ ! -f ~/.bitly ] && stderr "Cannot find key for bitly API call!" && return 1
   source ~/.bitly
 
   [ "${1:0:7}" != 'http://' ] && [ "${1:0:8}" != 'https://' ] && _url="https://$1" || _url="$1"
@@ -25,18 +25,19 @@ function bitly_url() {
 }
 
 
-# E.g. encrypt_password  # will encrypt your current password and save the mapping into password file.
+# E.g. encrypt_password (<plain text passord>)  # By default, will encrypt current password ($password) and save the mapping into password file.
 function encrypt_password() {
-  password=${1:-$password} && [ -z "$password" ] && echo "password not found!" && return 1
+  password=${1:-$password} && [ -z "$password" ] && stderr "password not found!" && return 1
   e_password=$(echo $password | md5)
   grep "^$e_password=" $password_file >/dev/null 2>&1 && sed -i '' -e "s/^$e_password=.*$/$e_password=$password/" $password_file || echo "$e_password=$password" >> $password_file
   echo "Encrypt password done!"
 }
 
 
-# E.g. decrypt_password <encrypted password>
+# E.g. decrypt_password (<encrypted password>)  # By default, will encrypt current encrypted password ($e_password)
 function decrypt_password() {
-  grep "^$1=" $password_file | cut -d= -f2
+  e_password=${1:-$e_password}
+  grep "^$e_password=" $password_file | cut -d= -f2
 }
 
 
@@ -52,8 +53,7 @@ function encode_uri() {
 }
 
 
-# E.g. gen_qrcode 200x200 https://www.google.com
-# E.g. gen_qrcode https://www.google.com  # default image size is 200x200
+# E.g. gen_qrcode (200x200) https://www.google.com?q=a b c  # default image size is 200x200
 function gen_qrcode() {
   gen_qrcode_url_template="https://api.qrserver.com/v1/create-qr-code/?size=__img_size__&data=__resource_uri__"
   output_file='/tmp/qrcode.png'
@@ -89,9 +89,10 @@ function _show_func_list() {
   cat <<EOF
 $( [ "$2" == 'custom' ] && echo 'Custom ' )Function List:
 $_sep
-$(grep '^function [^_]' $1 | cut -d ' ' -f2 | cut -d '(' -f1 | egrep -v "$excluded_func_regex" | sed -e 's/^/  /')
-
 EOF
+  [ -f "$1" ] && \
+    grep '^function [^_]' $1 | cut -d ' ' -f2 | cut -d '(' -f1 | egrep -v "$excluded_func_regex" | sed -e 's/^/  /'
+  echo ''
 }
 
 function _show_func_eg_list() {
@@ -99,9 +100,10 @@ function _show_func_eg_list() {
   cat <<EOF
 $( [ "$2" == 'custom' ] && echo 'Custom ' )Function E.g.
 $_sep
-$(grep '^# E.g. [^_]' $1 | sed -e "s|^#[ ]*E.g.[ ]*|  $0 |" | egrep -v "  $0 $excluded_func_regex")
-
 EOF
+  [ -f "$1" ] && \
+    grep '^# E.g. [^_]' $1 | sed -e "s|^#[ ]*E.g.[ ]*|  $0 |" | egrep -v "  $0 $excluded_func_regex"
+  echo ''
 }
 
 
@@ -109,10 +111,6 @@ EOF
 function help() {
   excluded_func_regex='(help|readme|vi)( |$)'
   _custom_file_options=$([ -f $custom_file ] && echo $custom_file)
-  _func_list=$(grep '^function [^_]' $0 | cut -d ' ' -f2 | cut -d '(' -f1 | egrep -v "$excluded_func_regex" | sed -e 's/^/  /')
-  _custom_func_list=$(grep '^function [^_]' $_custom_file_options | cut -d ' ' -f2 | cut -d '(' -f1 | egrep -v "$excluded_func_regex" | sed -e 's/^/  /')
-  _func_eg_list=$(cat $0 | grep '^# E.g. [^_]' | sed -e "s|^#[ ]*E.g.[ ]*|  $0 |" | egrep -v "  $0 $excluded_func_regex")
-  _custom_func_eg_list=$(cat $_custom_file_options | grep '^# E.g. [^_]' | sed -e "s|^#[ ]*E.g.[ ]*|  $0 |" | egrep -v "  $0 $excluded_func_regex")
   _sep=$(repeat '-' 72)
   cat <<EOF
 Usage:
@@ -132,14 +130,14 @@ EOF
 }
 
 
-# E.g. keep_alive -s https://aws.gilmoreglobal.com/login/en https://aws.gilmoreglobal.com/logout https://aws.gilmoreglobal.com/en  # -s: silence mode
+# E.g. keep_alive (-s) https://aws.gilmoreglobal.com/login/en https://aws.gilmoreglobal.com/logout https://aws.gilmoreglobal.com/en  # -s: silence mode
 # Note:
 # you could run it in background by putting the following into your crontab.
 # username=<username> e_password=<encrypted password> ./useful_tool_collection.sh keep_alive -s <login url> <logout url> <home url>
 function keep_alive() {
   is_silence=false
   [ "$1" == '-s' ] && is_silence=true && shift
-  [ $# -lt 3 ] && echo "Need to assign login/logout/homepage URIs, exit!" && return 1
+  [ $# -lt 3 ] && stderr "Need to assign login/logout/homepage URIs, exit!" && return 1
   token_file=/tmp/token.txt
   output_file=/tmp/output.html
   login_url="$1"
@@ -153,7 +151,7 @@ function keep_alive() {
   curl -i -L -X GET -c $token_file -o ${output_file} $home_url && \
     _token=$(grep _token ${output_file} | cut -d\" -f6) && \
     login_url=$(grep action ${output_file} | grep https | cut -d\" -f8) && \
-    [ -z "$login_url" ] && echo 'Error fetch action from page, exit!' && exit 1
+    [ -z "$login_url" ] && stderr 'Error fetch action from page, exit!' && return 1
   curl -i -X POST -b $token_file -c $token_file -o ${output_file} -d username=$username -d password=$password -d _token=$_token $login_url
   curl -i -L -X GET -b $token_file -o ${output_file} $home_url
   ! $is_silence && open ${output_file}
@@ -170,11 +168,11 @@ _show_funcs=false
 [ "$1" == '-h' ] && _show_funcs=false && shift
 [ "$1" == '-H' ] && _show_funcs=true && shift
 
-[ -f $utils_file ] && echo "Loading $utils_file" && source $utils_file
+[ -f $utils_file ] && echo "Loading $utils_file" >&2 && source $utils_file
 _gen_custom_file # generate custom file (once)
-[ -f $custom_file ] && echo "Loading $custom_file" && source $custom_file
+[ -f $custom_file ] && echo "Loading $custom_file" >&2 && source $custom_file
 
-[ $# -eq 0 ] && help && exit 1
-! _is_function $1 && echo "Function ($1) not found!" && exit 1
+[ $# -eq 0 ] && help >&2 && exit 1
+! _is_function $1 && echo "Function ($1) not found!" >&2 && exit 1
 
 $@

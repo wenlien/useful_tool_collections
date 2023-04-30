@@ -1,4 +1,9 @@
 #!/bin/bash
+function stderr() {
+  echo $@ >&2
+}
+
+
 function _gen_custom_file() {
   custom_file_init=$custom_file.init
   if [ ! -f $custom_file_init ] && [ ! -f $custom_file ]
@@ -45,6 +50,7 @@ function _is_function() {
 function readme() {
   open $(dirname $0)/README.md
 }
+
 
 function repeat() {
   printf %$2s | tr " " "$1"
