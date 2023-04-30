@@ -1,5 +1,12 @@
+#!/bin/bash
 function _gen_custom_file() {
-  [ ! -f $custom_file ] && cat <<'EOF' > $custom_file
+  custom_file_init=$custom_file.init
+  if [ ! -f $custom_file_init ] && [ ! -f $custom_file ]
+  then
+    read -p "Cannt find $custom_file, do you want to ceate it [y/N]? " yN
+    ([ "$yN" == 'y' ] || [ "$yN" == 'Y' ]) && \
+      cat <<'EOF' > $custom_file
+#/bin/bash
 # The useful_tool_collections.custom file is for custom functions, and won't be updated from repository.
 # Please check if the file exists in .gitignore
 #
@@ -22,7 +29,8 @@ function _helloworld_private_custom() {
   echo 'Hello World, private custom!'
 }
 EOF
-
+  fi
+  touch $custom_file_init
 }
 
 
@@ -36,6 +44,10 @@ function _is_function() {
 # E.g. readme
 function readme() {
   open $(dirname $0)/README.md
+}
+
+function repeat() {
+  printf %$2s | tr " " "$1"
 }
 
 

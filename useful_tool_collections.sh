@@ -25,24 +25,30 @@ function bitly_url() {
 }
 
 
-# E.g. decrypt_password <encrypted password>
-function decrypt_password() {
-  grep "^$1=" $password_file | cut -d= -f2
-}
-
-
-# E.g. encode_uri https://www.gogole.com?q=a b c
-function encode_uri() {
-  echo $@ | sed -e 's/ /%20/g'
-}
-
-
 # E.g. encrypt_password  # will encrypt your current password and save the mapping into password file.
 function encrypt_password() {
   password=${1:-$password} && [ -z "$password" ] && echo "password not found!" && return 1
   e_password=$(echo $password | md5)
   grep "^$e_password=" $password_file >/dev/null 2>&1 && sed -i '' -e "s/^$e_password=.*$/$e_password=$password/" $password_file || echo "$e_password=$password" >> $password_file
   echo "Encrypt password done!"
+}
+
+
+# E.g. decrypt_password <encrypted password>
+function decrypt_password() {
+  grep "^$1=" $password_file | cut -d= -f2
+}
+
+
+# E.g. list_password
+function list_password() {
+  cat $password_file
+}
+
+
+# E.g. encode_uri https://www.gogole.com?q=a b c
+function encode_uri() {
+  echo $@ | sed -e 's/ /%20/g'
 }
 
 
@@ -82,23 +88,35 @@ function gen_qrcode() {
 function help() {
   excluded_func_regex='(help|readme|vi)( |$)'
   _custom_file_options=$([ -f $custom_file ] && echo $custom_file)
+  _func_list=$(grep '^function [^_]' $0 | cut -d ' ' -f2 | cut -d '(' -f1 | egrep -v "$excluded_func_regex" | sed -e 's/^/  /')
+  _custom_func_list=$(grep '^function [^_]' $_custom_file_options | cut -d ' ' -f2 | cut -d '(' -f1 | egrep -v "$excluded_func_regex" | sed -e 's/^/  /')
+  _func_eg_list=$(cat $0 | grep '^# E.g. [^_]' | sed -e "s|^#[ ]*E.g.[ ]*|  $0 |" | egrep -v "  $0 $excluded_func_regex")
+  _custom_func_eg_list=$(cat $_custom_file_options | grep '^# E.g. [^_]' | sed -e "s|^#[ ]*E.g.[ ]*|  $0 |" | egrep -v "  $0 $excluded_func_regex")
+  _sep=$(repeat '-' 72)
   cat <<EOF
 Usage:
   $0 help    # help manual
   $0 readme  # show readme info
   $0 vi      # edit $0 script
   $0 <function name> <arguements>
+
 Function list:
-$(grep '^function [^_]' $0 $_custom_file_options | cut -d ' ' -f2 | cut -d '(' -f1 | egrep -v "$excluded_func_regex" | sed -e 's/^/  /' | sort)
-E.g.
-$(cat $0 $_custom_file_options | grep '^# E.g. [^_]' | sed -e "s|^#[ ]*E.g.[ ]*|  $0 |" | egrep -v "  $0 $excluded_func_regex" | sort)
+$_sep
+$_func_list
+
+Custom function list:
+$_sep
+$_custom_func_list
+
+Function E.g.
+$_sep
+$_func_eg_list
+
+Custom function E.g.
+$_sep
+$_custom_func_eg_list
+
 EOF
-}
-
-
-# E.g. list_password
-function list_password() {
-  cat $password_file
 }
 
 
@@ -133,12 +151,11 @@ function keep_alive() {
 
 # main
 custom_file=${0/.sh/.custom}
-custom_file_done=$custom_file.done
 password_file=${0/.sh/.password}
 utils_file=${0/.sh/.utils}
 
 [ -f $utils_file ] && echo "Loading $utils_file" && source $utils_file
-[ ! -f $custom_file_done ] && _gen_custom_file && touch $custom_file_done # generate custom file (once)
+_gen_custom_file # generate custom file (once)
 [ -f $custom_file ] && echo "Loading $custom_file" && source $custom_file
 
 [ $# -eq 0 ] && help && exit 1
