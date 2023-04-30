@@ -84,6 +84,27 @@ function gen_qrcode() {
 }
 
 
+function _show_func_list() {
+  [ $# -eq 0 ] && return
+  cat <<EOF
+$( [ "$2" == 'custom' ] && echo 'Custom ' )Function List:
+$_sep
+$(grep '^function [^_]' $1 | cut -d ' ' -f2 | cut -d '(' -f1 | egrep -v "$excluded_func_regex" | sed -e 's/^/  /')
+
+EOF
+}
+
+function _show_func_eg_list() {
+  [ $# -eq 0 ] && return
+  cat <<EOF
+$( [ "$2" == 'custom' ] && echo 'Custom ' )Function E.g.
+$_sep
+$(grep '^# E.g. [^_]' $1 | sed -e "s|^#[ ]*E.g.[ ]*|  $0 |" | egrep -v "  $0 $excluded_func_regex")
+
+EOF
+}
+
+
 # E.g. help
 function help() {
   excluded_func_regex='(help|readme|vi)( |$)'
@@ -100,23 +121,14 @@ Usage:
   $0 vi      # edit $0 script
   $0 <function name> <arguements>
 
-Function list:
-$_sep
-$_func_list
-
-Custom function list:
-$_sep
-$_custom_func_list
-
-Function E.g.
-$_sep
-$_func_eg_list
-
-Custom function E.g.
-$_sep
-$_custom_func_eg_list
-
 EOF
+  $_show_funcs && _show_func_list $0
+  $_show_funcs && _show_func_list $custom_file custom
+  $_show_funcs && _show_func_eg_list $0
+  $_show_funcs && _show_func_eg_list $custom_file custom
+  ! $_show_funcs && echo "Run command w/ '-H' to list existing functions!"
+
+  return 0
 }
 
 
@@ -153,6 +165,10 @@ function keep_alive() {
 custom_file=${0/.sh/.custom}
 password_file=${0/.sh/.password}
 utils_file=${0/.sh/.utils}
+
+_show_funcs=false
+[ "$1" == '-h' ] && _show_funcs=false && shift
+[ "$1" == '-H' ] && _show_funcs=true && shift
 
 [ -f $utils_file ] && echo "Loading $utils_file" && source $utils_file
 _gen_custom_file # generate custom file (once)
