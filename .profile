@@ -10,3 +10,4 @@ function u() {
       ;;
   esac
 }
+source $_useful_tool_collections_base_dir/useful_tool_collections.completion.sh

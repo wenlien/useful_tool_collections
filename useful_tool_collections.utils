@@ -39,6 +39,11 @@ EOF
 }
 
 
+function get_subcommand_list() {
+  grep '^function [^_]' $0 | cut -d' ' -f2 | cut -d'(' -f1
+}
+
+
 # Hidden function, check if it is a function.
 # E.g. _is_function
 function _is_function() {
