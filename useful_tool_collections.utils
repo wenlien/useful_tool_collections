@@ -40,7 +40,7 @@ EOF
 
 
 function get_subcommand_list() {
-  grep '^function [^_]' $0 | cut -d' ' -f2 | cut -d'(' -f1
+  grep '^function [^_]' $0 ${0/.sh}.custom | cut -d' ' -f2 | cut -d'(' -f1
 }
 
 
