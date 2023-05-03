@@ -17,8 +17,7 @@ function _useful_tool_collections_completion() {
       case $prev in
         vi)
           local ext=''
-          ls $_useful_tool_collections_base_dir/useful_tool_collections.* >/dev/null 2>&1 && ext=$(echo $(ls $_useful_tool_collections_base_dir/useful_tool_collections* 2>/dev/null | sed -e 's/[^.]*\.//')) ||
-            ext=$(echo $(ls ${script/.sh}* 2>/dev/null | sed -e 's/[^.]*\.//'))
+          ls $_useful_tool_collections_base_dir/useful_tool_collections.* >/dev/null 2>&1 && ext=$(echo $(ls $_useful_tool_collections_base_dir/useful_tool_collections* 2>/dev/null | sed -e 's/[^.]*\.//'))
           COMPREPLY=( $(compgen -W "${ext}" -- $cur) )
           ;;
         *)
