@@ -6,6 +6,13 @@ function stderr() {
 
 function _gen_custom_file() {
   custom_file_init=$custom_file.init
+  custom_profile_init=$custom_profile.init
+  if [ ! -f $custom_profile_init ] && [ ! -f $custom_profile ]
+  then
+    touch $custom_profile
+  fi
+  touch $custom_profile_init
+
   if [ ! -f $custom_file_init ] && [ ! -f $custom_file ]
   then
     read -p "Cannt find $custom_file, do you want to ceate it [y/N]? " yN

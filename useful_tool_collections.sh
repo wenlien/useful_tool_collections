@@ -95,6 +95,7 @@ EOF
   echo ''
 }
 
+
 function _show_func_eg_list() {
   [ $# -eq 0 ] && return
   cat <<EOF
@@ -161,6 +162,7 @@ function keep_alive() {
 
 # main
 custom_file=${0/.sh/.custom}
+custom_profile=$(dirname $0)/.profile.custom
 password_file=${0/.sh/.password}
 utils_file=${0/.sh/.utils}
 
