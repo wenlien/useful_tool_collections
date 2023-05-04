@@ -1,5 +1,5 @@
 #!/bin/bash
-function stderr() {
+function _stderr() {
   echo $@ >&2
 }
 
@@ -64,8 +64,32 @@ function readme() {
 }
 
 
-function repeat() {
+function _repeat() {
   printf %$2s | tr " " "$1"
+}
+
+
+function _show_func_list() {
+  [ $# -eq 0 ] && return
+  cat <<EOF
+$( [ "$2" == 'custom' ] && echo 'Custom ' )Function List:
+$_sep
+EOF
+  [ -f "$1" ] && \
+    grep '^function [^_]' $1 | cut -d ' ' -f2 | cut -d '(' -f1 | egrep -v "$excluded_func_regex" | sed -e 's/^/  /'
+  echo ''
+}
+
+
+function _show_func_eg_list() {
+  [ $# -eq 0 ] && return
+  cat <<EOF
+$( [ "$2" == 'custom' ] && echo 'Custom ' )Function E.g.
+$_sep
+EOF
+  [ -f "$1" ] && \
+    grep '^# E.g. [^_]' $1 | sed -e "s|^#[ ]*E.g.[ ]*|  $0 |" | egrep -v "  $0 $excluded_func_regex"
+  echo ''
 }
 
 

@@ -7,7 +7,7 @@
 #   BITLY_GUID=<put your bitly guid in here>
 #   BITLY_TOKEN=<put your bitly token in here>
 function bitly_url() {
-  [ ! -f ~/.bitly ] && stderr "Cannot find key for bitly API call!" && return 1
+  [ ! -f ~/.bitly ] && _stderr "Cannot find key for bitly API call!" && return 1
   source ~/.bitly
 
   [ "${1:0:7}" != 'http://' ] && [ "${1:0:8}" != 'https://' ] && _url="https://$1" || _url="$1"
@@ -27,7 +27,7 @@ function bitly_url() {
 
 # E.g. encrypt_password (<plain text passord>)  # By default, will encrypt current password ($password) and save the mapping into password file.
 function encrypt_password() {
-  password=${1:-$password} && [ -z "$password" ] && stderr "password not found!" && return 1
+  password=${1:-$password} && [ -z "$password" ] && _stderr "password not found!" && return 1
   e_password=$(echo $password | md5)
   grep "^$e_password=" $password_file >/dev/null 2>&1 && sed -i '' -e "s/^$e_password=.*$/$e_password=$password/" $password_file || echo "$e_password=$password" >> $password_file
   echo "Encrypt password done!"
@@ -84,35 +84,13 @@ function gen_qrcode() {
 }
 
 
-function _show_func_list() {
-  [ $# -eq 0 ] && return
-  cat <<EOF
-$( [ "$2" == 'custom' ] && echo 'Custom ' )Function List:
-$_sep
-EOF
-  [ -f "$1" ] && \
-    grep '^function [^_]' $1 | cut -d ' ' -f2 | cut -d '(' -f1 | egrep -v "$excluded_func_regex" | sed -e 's/^/  /'
-  echo ''
-}
-
-
-function _show_func_eg_list() {
-  [ $# -eq 0 ] && return
-  cat <<EOF
-$( [ "$2" == 'custom' ] && echo 'Custom ' )Function E.g.
-$_sep
-EOF
-  [ -f "$1" ] && \
-    grep '^# E.g. [^_]' $1 | sed -e "s|^#[ ]*E.g.[ ]*|  $0 |" | egrep -v "  $0 $excluded_func_regex"
-  echo ''
-}
 
 
 # E.g. help
 function help() {
   excluded_func_regex='(help|readme|vi)( |$)'
   _custom_file_options=$([ -f $custom_file ] && echo $custom_file)
-  _sep=$(repeat '-' 72)
+  _sep=$(_repeat '-' 72)
   cat <<EOF
 Usage:
   $0 help    # help manual
@@ -138,7 +116,7 @@ EOF
 function keep_alive() {
   is_silence=false
   [ "$1" == '-s' ] && is_silence=true && shift
-  [ $# -lt 3 ] && stderr "Need to assign login/logout/homepage URIs, exit!" && return 1
+  [ $# -lt 3 ] && _stderr "Need to assign login/logout/homepage URIs, exit!" && return 1
   token_file=/tmp/token.txt
   output_file=/tmp/output.html
   login_url="$1"
@@ -152,7 +130,7 @@ function keep_alive() {
   curl -i -L -X GET -c $token_file -o ${output_file} $home_url && \
     _token=$(grep _token ${output_file} | cut -d\" -f6) && \
     login_url=$(grep action ${output_file} | grep https | cut -d\" -f8) && \
-    [ -z "$login_url" ] && stderr 'Error fetch action from page, exit!' && return 1
+    [ -z "$login_url" ] && _stderr 'Error fetch action from page, exit!' && return 1
   curl -i -X POST -b $token_file -c $token_file -o ${output_file} -d username=$username -d password=$password -d _token=$_token $login_url
   curl -i -L -X GET -b $token_file -o ${output_file} $home_url
   ! $is_silence && open ${output_file}
