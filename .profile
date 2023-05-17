@@ -1,4 +1,6 @@
 export _useful_tool_collections_base_dir="$(dirname $(readlink -f $0))"
+export default_show_funcs=false
+
 
 function u() {
   _useful_tool_collections_script="$_useful_tool_collections_base_dir/useful_tool_collections.sh"
@@ -11,6 +13,7 @@ function u() {
       ;;
   esac
 }
+
 
 source $_useful_tool_collections_base_dir/useful_tool_collections.completion.sh
 [ -f $_useful_tool_collections_base_dir/.profile.custom ] && \

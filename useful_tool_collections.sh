@@ -144,14 +144,13 @@ custom_profile=$(dirname $0)/.profile.custom
 password_file=${0/.sh/.password}
 utils_file=${0/.sh/.utils}
 
-_show_funcs=false
-[ "$1" == '-h' ] && _show_funcs=false && shift
-[ "$1" == '-H' ] && _show_funcs=true && shift
-
 [ -f $utils_file ] && echo "Loading $utils_file" >&2 && source $utils_file
 _gen_custom_file # generate custom file (once)
 [ -f $custom_file ] && echo "Loading $custom_file" >&2 && source $custom_file
 
+_show_funcs=${default_show_funcs:-false}
+[ "$1" == '-h' ] && _show_funcs=false && shift
+[ "$1" == '-H' ] && _show_funcs=true && shift
 [ $# -eq 0 ] && help >&2 && exit 1
 ! _is_function $1 && echo "Function ($1) not found!" >&2 && exit 1
 
