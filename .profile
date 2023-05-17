@@ -1,5 +1,5 @@
 export _useful_tool_collections_base_dir="$(dirname $(readlink -f $0))"
-export default_show_funcs=false
+export default_show_funcs=''
 
 
 function u() {

@@ -99,12 +99,12 @@ Usage:
   $0 <function name> <arguements>
 
 EOF
-  $_show_funcs && _show_func_list $0
-  $_show_funcs && _show_func_list $custom_file custom
-  $_show_funcs && _show_func_eg_list $0
-  $_show_funcs && _show_func_eg_list $custom_file custom
-  ! $_show_funcs && echo "Run command w/ '-H' to list existing functions!"
 
+  [ -z "$_show_funcs" ] && echo "Run command with -h/-H/--help to list custom/system/all functions!" && return 0
+  ([ "$_show_funcs" == 'system' ] || [ "$_show_funcs" == 'all' ]) && _show_func_list $0
+  ([ "$_show_funcs" == 'custom' ] || [ "$_show_funcs" == 'all' ]) && _show_func_list $custom_file custom
+  ([ "$_show_funcs" == 'system' ] || [ "$_show_funcs" == 'all' ]) && _show_func_eg_list $0
+  ([ "$_show_funcs" == 'custom' ] || [ "$_show_funcs" == 'all' ]) && _show_func_eg_list $custom_file custom
   return 0
 }
 
@@ -148,9 +148,10 @@ utils_file=${0/.sh/.utils}
 _gen_custom_file # generate custom file (once)
 [ -f $custom_file ] && echo "Loading $custom_file" >&2 && source $custom_file
 
-_show_funcs=${default_show_funcs:-false}
-[ "$1" == '-h' ] && _show_funcs=false && shift
-[ "$1" == '-H' ] && _show_funcs=true && shift
+_show_funcs="$default_show_funcs"
+[ "$1" == '-h' ] && _show_funcs=custom && shift
+[ "$1" == '-H' ] && _show_funcs=system && shift
+[ "$1" == '--help' ] && _show_funcs=all && shift
 [ $# -eq 0 ] && help >&2 && exit 1
 ! _is_function $1 && echo "Function ($1) not found!" >&2 && exit 1
 
