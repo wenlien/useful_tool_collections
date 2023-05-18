@@ -100,11 +100,11 @@ Usage:
 
 EOF
 
-  [ -z "$_show_funcs" ] && echo "Run command with -h/-H/--help to list custom/system/all functions!" && return 0
   ([ "$_show_funcs" == 'system' ] || [ "$_show_funcs" == 'all' ]) && _show_func_list $0
   ([ "$_show_funcs" == 'custom' ] || [ "$_show_funcs" == 'all' ]) && _show_func_list $custom_file custom
   ([ "$_show_funcs" == 'system' ] || [ "$_show_funcs" == 'all' ]) && _show_func_eg_list $0
   ([ "$_show_funcs" == 'custom' ] || [ "$_show_funcs" == 'all' ]) && _show_func_eg_list $custom_file custom
+  echo 'Run command with -h/-H/--help to list custom/system/all functions!' && return 0
   return 0
 }
 
