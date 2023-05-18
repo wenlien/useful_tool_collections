@@ -1,5 +1,5 @@
 export _useful_tool_collections_base_dir="$(dirname $(readlink -f $0))"
-export default_show_funcs=''
+export default_show_funcs=''  # valid values: custom/system/all
 
 
 function u() {
@@ -7,6 +7,10 @@ function u() {
   case "$1" in
     cd)
       cd $_useful_tool_collections_base_dir
+      ;;
+    reload)
+      source $_useful_tool_collections_base_dir/.profile
+      source $_useful_tool_collections_base_dir/.profile.custom
       ;;
     *)
       $_useful_tool_collections_script "$@"

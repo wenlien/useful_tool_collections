@@ -9,7 +9,9 @@ function _gen_custom_file() {
   custom_profile_init=$custom_profile.init
   if [ ! -f $custom_profile_init ] && [ ! -f $custom_profile ]
   then
-    touch $custom_profile
+    cat <<'EOF' >  $custom_profile
+export default_show_funcs=''  # valid values: custom/system/all
+EOF
   fi
   touch $custom_profile_init
 
@@ -95,5 +97,13 @@ EOF
 
 # E.g. vi [custom/password/utils/sh]
 function vi() {
-  vim ${0/.sh}.${1:-sh}
+  if [ -f "$1" ]
+  then
+    vim "$1"
+  elif [ -f "${0/.sh}.${1:-sh}" ]
+  then
+    vim "${0/.sh}.${1:-sh}"
+  else
+    echo "File ($1) not found!" && exit 1
+  fi
 }
