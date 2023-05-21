@@ -55,14 +55,16 @@ function encode_uri() {
 
 # E.g. gen_qrcode (200x200) https://www.google.com?q=a b c  # default image size is 200x200
 function gen_qrcode() {
-  gen_qrcode_url_template="https://api.qrserver.com/v1/create-qr-code/?size=__img_size__&data=__resource_uri__"
+  gen_qrcode_url_template="https://api.qrserver.com/v1/create-qr-code/?size=__img_size__&data=__data__"
   output_file='/tmp/qrcode.png'
   img_size='200x200'
   is_quiet=false
-  [ $# -eq 1 ] && set $img_size "$1"
-  [ $# -gt 1 ] && img_size="$1" && shift && resource_uri="$@" && is_quiet=true
+  [ $# -eq 1 ] && ! echo "$1" | /usr/bin/egrep '^[0-9]+x[0-9]+$' >/dev/null && set $img_size "$1"
+  echo "$1" | /usr/bin/egrep '^[0-9]+x[0-9]+$' >/dev/null && img_size="$1" && shift
+  context="$@"
+  ([ ! -z "$img_size" ] && [ ! -z "$context" ]) && is_quiet=true
 
-  echo 'Generate QRCode for web link...'
+  echo "Generate QRCode ($img_size, $context)..."
   ! $is_quiet && while [ -z "$_img_size" ]
   do
     read -p "Image size [$img_size]? " _img_size
@@ -70,16 +72,15 @@ function gen_qrcode() {
     [ ! -z "$img_size" ] && break
   done
 
-  ! $is_quiet && while [ -z "$_resource_uri" ]
+  ! $is_quiet && while [ -z "$_context" ]
   do
-    read -p "resource URI [$resource_uri]? " _resource_uri
-    [ ! -z "$_resource_uri" ] && resource_uri=$_resource_uri
-    [ ! -z "$resource_uri" ] && break
+    read -p "Context [$context]? " _context
+    [ ! -z "$_context" ] && context=$_context
+    [ ! -z "$context" ] && break
   done
 
-  resource_uri=$(encode_uri $resource_uri)
-  gen_qrcode_uri=$(echo $gen_qrcode_url_template | sed -e "s|__img_size__|$img_size|" | sed -e "s|__resource_uri__|$resource_uri|")
-  echo "Resource URI: '$resource_uri'"
+  context=$(encode_uri $context)
+  gen_qrcode_uri=$(echo $gen_qrcode_url_template | sed -e "s|__img_size__|$img_size|" | sed -e "s|__data__|$context|")
   curl -s -o $output_file $gen_qrcode_uri && echo "Save QRCode to $output_file, open it!" && open $output_file
 }
 
