@@ -88,8 +88,6 @@ function gen_qrcode() {
 }
 
 
-
-
 # E.g. help
 function help() {
   excluded_func_regex='(help|readme|vi)( |$)'
