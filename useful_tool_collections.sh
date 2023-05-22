@@ -43,7 +43,10 @@ function decrypt_password() {
 
 # E.g. list_password
 function list_password() {
-  cat $password_file
+  cat $password_file | while read l
+  do
+    echo "$(echo $l | cut -d= -f1)=$(_mask $(echo $l | cut -d= -f2))"
+  done
 }
 
 

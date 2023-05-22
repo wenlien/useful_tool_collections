@@ -1,9 +1,4 @@
 #!/bin/bash
-function _stderr() {
-  echo $@ >&2
-}
-
-
 function _gen_custom_file() {
   custom_file_init=$custom_file.init
   custom_profile_init=$custom_profile.init
@@ -60,6 +55,25 @@ function _is_function() {
 }
 
 
+# E.g.
+# length < 7, mask all, ******
+# length = 7, mask first 6, *******7
+# length > 7, mask all except last 2, ******78
+function _mask() {
+  string="$1"
+  len_str=${#string}
+  len_mask=$(($len_str-2))
+  mask_char='\*'
+
+  if [ $len_str -le 7 ]
+  then
+    echo $(_repeat $mask_char $len_str)${string:6:1}
+  else
+    echo $(_repeat $mask_char $len_mask)${string:$len_mask:2}
+  fi
+}
+
+
 # E.g. readme
 function readme() {
   open $(dirname $0)/README.md
@@ -92,6 +106,11 @@ EOF
   [ -f "$1" ] && \
     grep '^# E.g. [^_]' $1 | sed -e "s|^#[ ]*E.g.[ ]*|  $0 |" | egrep -v "  $0 $excluded_func_regex"
   echo ''
+}
+
+
+function _stderr() {
+  echo $@ >&2
 }
 
 
