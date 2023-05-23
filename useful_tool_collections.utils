@@ -67,12 +67,12 @@ function _mask() {
 
   if [ $len_str -lt 7 ]
   then
-    echo $(_repeat $mask_char $len_str)
+    echo "$(_repeat $mask_char $len_str)"
   elif [ $len_str -eq 7 ]
   then
-    echo $(_repeat $mask_char 6)${string:6:1}
+    echo "$(_repeat $mask_char 6)${string:6:1}"
   else
-    echo $(_repeat $mask_char $len_mask)${string:$len_mask:2}
+    echo "$(_repeat $mask_char $len_mask)${string:$len_mask:2}"
   fi
 }
 
