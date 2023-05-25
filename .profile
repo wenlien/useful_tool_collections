@@ -6,7 +6,7 @@ function u() {
   _useful_tool_collections_script="$_useful_tool_collections_base_dir/useful_tool_collections.sh"
   case "$1" in
     cd)
-      cd $_useful_tool_collections_base_dir
+      [ "$(pwd)" != "$_useful_tool_collections_base_dir" ] && cd "$_useful_tool_collections_base_dir" || cd "$awsscripts_dir/z_utils"
       ;;
     reload)
       source $_useful_tool_collections_base_dir/.profile
