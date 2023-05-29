@@ -33,8 +33,9 @@ $
 
 ```
 $ ./useful_tool_collections.sh gen_qrcode 200x200 https://www.google.com
-Generate QRCode for web link...
-Resource URI: '200x200%20https://www.google.com'
+Loading ./useful_tool_collections.utils
+Loading ./useful_tool_collections.custom
+Generate QRCode (200x200, https://www.google.com)...
 Save QRCode to /tmp/qrcode.png, open it!
 $
 ```
@@ -44,7 +45,7 @@ $
   You could pass username/password during process or assign username/password into environment before execute the script.
 
 ```
-$ username=<user> password<plain text> ./useful_tool_collections.sh -s <login url> <logout url> <homepage url>
+$ username=<user> password=<plain text> ./useful_tool_collections.sh -s <login url> <logout url> <homepage url>
 ```
 
 or
@@ -54,5 +55,5 @@ or
 ```
 $ ./useful_tool_collections encrypt_password
 $ cat ./useful_tool_collections.password
-$ username=<user> e_password<encrypted text> ./useful_tool_collections.sh -s <login url> <logout url> <homepage url>
+$ username=<user> e_password=<encrypted text> ./useful_tool_collections.sh -s <login url> <logout url> <homepage url>
 ```
