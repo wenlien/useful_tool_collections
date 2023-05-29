@@ -25,7 +25,7 @@ function bitly_url() {
 }
 
 
-# E.g. encrypt_password (<plain text passord>)  # By default, will encrypt current password ($password) and save the mapping into password file.
+# E.g. encrypt_password [plain text password]  # By default, will encrypt current password ($password) and save the mapping into password file.
 function encrypt_password() {
   password=${1:-$password} && [ -z "$password" ] && _stderr "password not found!" && return 1
   e_password=$(echo $password | md5)
@@ -34,7 +34,7 @@ function encrypt_password() {
 }
 
 
-# E.g. decrypt_password (<encrypted password>)  # By default, will encrypt current encrypted password ($e_password)
+# E.g. decrypt_password [encrypted password]  # By default, will encrypt current encrypted password ($e_password)
 function decrypt_password() {
   e_password=${1:-$e_password}
   grep "^$e_password=" $password_file | cut -d= -f2
