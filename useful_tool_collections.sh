@@ -85,6 +85,7 @@ function gen_qrcode() {
   context=$(encode_uri $context)
   gen_qrcode_uri=$(echo $gen_qrcode_url_template | sed -e "s|__img_size__|$img_size|" | sed -e "s|__data__|$context|")
   curl -s -o $output_file $gen_qrcode_uri && echo "Save QRCode to $output_file, open it!" && open $output_file
+  rm -i $output_file
 }
 
 
