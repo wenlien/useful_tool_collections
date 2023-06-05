@@ -79,7 +79,10 @@ function _mask() {
 
 # E.g. readme
 function readme() {
-  open $(dirname $0)/README.md
+  _readme_file="$(dirname $0)/README.md"
+  [ ! -f "$_readme_file" ] && echo 'README.md not found!' && return 1
+  echo "Open README.md ($_readme_file)..."
+  open $_readme_file
 }
 
 
