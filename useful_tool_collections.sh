@@ -36,6 +36,7 @@ function encrypt_password() {
 
 # E.g. decrypt_password [encrypted password]  # By default, will encrypt current encrypted password ($e_password)
 function decrypt_password() {
+  [ ! -f "$password_file" ] && echo "Password file ($password_file) not found, exit!" && return 1
   e_password=${1:-$e_password}
   grep "^$e_password=" $password_file | cut -d= -f2
 }
@@ -43,6 +44,7 @@ function decrypt_password() {
 
 # E.g. list_password
 function list_password() {
+  [ ! -f "$password_file" ] && echo "Password file ($password_file) not found, exit!" && return 1
   cat $password_file | while read l
   do
     echo "$(echo $l | cut -d= -f1)=$(_mask $(echo $l | cut -d= -f2))"
