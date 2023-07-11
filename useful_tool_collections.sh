@@ -25,7 +25,29 @@ function bitly_url() {
 }
 
 
-# E.g. encrypt_password [plain text password]  # By default, will encrypt current password ($password) and save the mapping into password file.
+# E.g. upload_secret_to_aws_secrets_manager [secret id] [plain text password]
+function upload_secret_to_aws_secrets_manager() {
+  secret_id=${1:-$secret_id} && [ -z "$secret_id" ] && _stderr "secret_id not found!" && return 1 || shift
+  password=${1:-$password} && [ -z "$password" ] && _stderr "password not found!" && return 1
+  e_password=$(echo $password | md5)
+  aws secretsmanager put-secret-value \
+    --secret-id Gilmore \
+    --secret-string "{\"$e_password\":\"$password\"}"
+}
+
+# E.g. get_secret_from_aws_secrets_manager [secret id] [encrypted password]
+function get_secret_from_aws_secrets_manager() {
+  secret_id=${1:-$secret_id} && [ -z "$secret_id" ] && _stderr "secret_id not found!" && return 1 || shift
+  e_password=${1:-$e_password} && [ -z "$e_password" ] && _stderr 'Cannot find encrypted password, exit!' && return 1
+  _secret_string=$(aws secretsmanager get-secret-value \
+    --secret-id Gilmore \
+    --version-stage AWSCURRENT \
+    --query 'SecretString')
+  eval echo $_secret_string | jq -r '."'$e_password'"'
+}
+
+
+# E.g. encrypt_password [plain text password]  # By default, will encrypt current password ($password) and save the mapping into local password file.
 function encrypt_password() {
   password=${1:-$password} && [ -z "$password" ] && _stderr "password not found!" && return 1
   e_password=$(echo $password | md5)
@@ -34,9 +56,9 @@ function encrypt_password() {
 }
 
 
-# E.g. decrypt_password [encrypted password]  # By default, will encrypt current encrypted password ($e_password)
+# E.g. decrypt_password [encrypted password]  # By default, will encrypt current encrypted password ($e_password) which is loaded from local password file.
 function decrypt_password() {
-  [ ! -f "$password_file" ] && echo "Password file ($password_file) not found, exit!" && return 1
+  [ ! -f "$password_file" ] && _stderr "Password file ($password_file) not found, exit!" && return 1
   e_password=${1:-$e_password}
   grep "^$e_password=" $password_file | cut -d= -f2
 }
@@ -114,7 +136,7 @@ EOF
 }
 
 
-# E.g. keep_alive (-s) https://aws.gilmoreglobal.com/login/en https://aws.gilmoreglobal.com/logout https://aws.gilmoreglobal.com/en  # -s: silence mode
+# E.g. keep_alive (-s) https://aws.gilmoreglobal.com/login/en https://aws.gilmoreglobal.com/logout https://aws.gilmoreglobal.com/en  # -s: silence mode, password is managed by AWS secrets manager
 # Note:
 # you could run it in background by putting the following into your crontab.
 # username=<username> e_password=<encrypted password> ./useful_tool_collection.sh keep_alive -s <login url> <logout url> <home url>
@@ -129,7 +151,8 @@ function keep_alive() {
   home_url="$3"
 
   [ -z "$username" ] && read -p 'username: ' username
-  [ ! -z "$e_password" ] && password=$(decrypt_password $e_password)
+  # [ ! -z "$e_password" ] && password=$(decrypt_password $e_password)  ## Deprecated, use AWS secrets manager instead.
+  [ ! -z "$e_password" ] && password=$(get_secret_from_aws_secrets_manager $e_password)
   [ -z "$password" ] && read -s -p 'password: ' password
 
   curl -i -L -X GET -c $token_file -o ${output_file} $home_url && \
