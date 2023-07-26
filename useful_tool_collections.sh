@@ -76,7 +76,7 @@ function list_password() {
 
 # E.g. encode_uri https://www.gogole.com?q=a b c
 function encode_uri() {
-  echo $@ | sed -e 's/ /%20/g'
+  python3 -c "from urllib import parse; print(parse.quote_plus('$@'));"
 }
 
 
