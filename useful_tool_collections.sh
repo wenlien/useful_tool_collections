@@ -166,6 +166,14 @@ function keep_alive() {
 }
 
 
+# E.g. uuid
+function uuid() {
+  _uuid=$(uuidgen | tr '[A-Z]' '[a-z]')
+  _uuid=$(echo $_uuid | sed -e 's/-//g')
+  echo $_uuid
+}
+
+
 # main
 custom_file=${0/.sh/.custom}
 custom_profile=$(dirname $0)/.profile.custom
