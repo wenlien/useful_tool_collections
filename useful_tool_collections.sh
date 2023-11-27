@@ -166,6 +166,20 @@ function keep_alive() {
 }
 
 
+# from tool to awsscript
+function sync() {
+  source z_utils.zshrc
+  sync_useful_tool_collections
+}
+
+
+# from awsscript to tool
+function restore() {
+  source z_utils.zshrc
+  restore_useful_tool_collections
+}
+
+
 # E.g. uuid
 function uuid() {
   _uuid=$(uuidgen | tr '[A-Z]' '[a-z]')
