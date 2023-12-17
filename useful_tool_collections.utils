@@ -1,4 +1,11 @@
 #!/bin/bash
+
+function die() {
+  _stderr $@
+  exit 1
+}
+
+
 function _gen_custom_file() {
   custom_file_init=$custom_file.init
   custom_profile_init=$custom_profile.init
