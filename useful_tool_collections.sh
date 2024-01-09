@@ -188,6 +188,16 @@ function uuid() {
 }
 
 
+# E.g. extract email from student info
+function extract_email() {
+  _file="$1" && [ -f "$_file" ] && grep -EiEio '\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}\b' $_file && return
+  while read l
+  do
+    echo $l | grep -EiEio '\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}\b'
+  done
+}
+
+
 # main
 custom_file=${0/.sh/.custom}
 custom_profile=$(dirname $0)/.profile.custom
