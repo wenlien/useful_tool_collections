@@ -146,6 +146,7 @@ function keep_alive() {
   [ $# -lt 3 ] && _stderr "Need to assign login/logout/homepage URIs, exit!" && return 1
   token_file=/tmp/token.txt
   output_file=/tmp/output.html
+  archive_output_file=/tmp/output.html.bak
   login_url="$1"
   logout_url="$2"
   home_url="$3"
@@ -155,6 +156,7 @@ function keep_alive() {
   [ ! -z "$e_password" ] && password=$(get_secret_from_aws_secrets_manager $e_password)
   [ -z "$password" ] && read -s -p 'password: ' password
 
+  [ -f "$output_file" ] && cat $output_file >> $archive_output_file && cat /dev/null > $output_file
   curl -i -L -X GET -c $token_file -o ${output_file} $home_url && [ $? -ne 0 ] && _stderr "Cannot browse homepage ($home_url)!" && return 1
   _token=$(grep _token ${output_file} | cut -d\" -f6) && [ -z "$_token" ] && _stderr "Cannot find toke in web page!" && return 1
   login_url=${login_url:-$(grep action ${output_file} | grep https | cut -d\" -f8)}
