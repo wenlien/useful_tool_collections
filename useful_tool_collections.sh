@@ -147,7 +147,7 @@ function keep_alive() {
   [ $# -lt 3 ] && _stderr "Need to assign login/logout/homepage URIs, exit!" && return 1
   cookies_file=/tmp/cookies.txt
   output_file=/tmp/output.html
-  archive_output_file=/tmp/output.html.bak
+  archive_output_file=/tmp/output.html.$(date '+%Y%m%d')
   login_url="$1"
   logout_url="$2"
   home_url="$3"
