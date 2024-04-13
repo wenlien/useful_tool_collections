@@ -137,17 +137,54 @@ EOF
 }
 
 
-# E.g. keep_alive (-s) https://aws.gilmoreglobal.com/en/login https://aws.gilmoreglobal.com/logout https://aws.gilmoreglobal.com/en  # -s: silence mode, password is managed by AWS secrets manager
+function _curl_keep_alive() {
+  [ -f "$output_file" ] && cat $output_file >> $archive_output_file && cat /dev/null > $output_file
+  curl -i -L -X GET -c $cookies_file -o ${output_file} $home_url && [ $? -ne 0 ] && _stderr "Cannot browse homepage ($home_url)!" && return 1
+  _token=$(grep _token ${output_file} | cut -d\" -f6) && [ -z "$_token" ] && _stderr "Cannot find toke in web page!" && return 1
+  login_url=${login_url:-$(grep action ${output_file} | grep https | cut -d\" -f8)}
+  [ -z "$login_url" ] && _stderr 'Error fetch action from page, exit!' && return 1
+  curl -i -X POST -b $cookies_file -c $cookies_file -o ${output_file} -d username=$username -d password=$password -d _token=$_token -H "User-Agent: $user_agent" -H "Origin: $home_url" -H "Referer: $login_url" $login_url
+  # is_debug
+  $is_debug && open $output_file && vi $output_file && $is_quit && return
+  curl -i -L -X GET -b $cookies_file -o ${output_file} $home_url
+  ! $is_silence && open ${output_file}
+  curl -i -L -X GET -b $cookies_file -o /dev/null $logout_url
+}
+
+# crontab:
+# 0 0 1,8,15,21,28 * * (cd /Users/weilh/githubs/useful_tool_collections; /opt/homebrew/bin/poetry run python3 ./gilmore.py https://aws.gilmoreglobal.com/en/log)
+function _selenium_keep_alive() {
+  output_file=/tmp/gilmore.log
+  cd $(dirname $0)
+  pwd >> $output_file
+  export username=$username
+  export password=$password
+  poetry run python3 ./gilmore.py $login_url >> $output_file
+}
+
+
+# Usage:
+#   keep_alive (-s/-d/-D) https://aws.gilmoreglobal.com/en/login https://aws.gilmoreglobal.com/logout https://aws.gilmoreglobal.com/en
+#   -s: silence mode, password is managed by AWS secrets manager
+#   -d: debug mode, continue after display debug info
+#   -D: debug mode, quit after display debug info
 # Note:
-# you could run it in background by putting the following into your crontab.
-# username=<username> e_password=<encrypted password> ./useful_tool_collection.sh keep_alive -s <login url> <logout url> <home url>
+#   you could run it in background by putting the following into your crontab.
+# E.g.
+#   username=<username> e_password=<encrypted password> ./useful_tool_collection.sh keep_alive -s -d <login url> <logout url> <home url>
+#   username=<username> e_password=<encrypted password> ./useful_tool_collection.sh keep_alive -s -D <login url> <logout url> <home url>
 function keep_alive() {
   is_silence=false
+  is_debug=false
+  is_quit=false
   [ "$1" == '-s' ] && is_silence=true && shift
+  [ "$1" == '-d' ] && is_debug=true && shift
+  [ "$1" == '-D' ] && is_debug=true && is_quit=true && shift
   [ $# -lt 3 ] && _stderr "Need to assign login/logout/homepage URIs, exit!" && return 1
   cookies_file=/tmp/cookies.txt
   output_file=/tmp/output.html
   archive_output_file=/tmp/output.html.$(date '+%Y%m%d')
+  user_agent='Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36'
   login_url="$1"
   logout_url="$2"
   home_url="$3"
@@ -157,26 +194,19 @@ function keep_alive() {
   [ ! -z "$e_password" ] && password=$(get_secret_from_aws_secrets_manager $e_password)
   [ -z "$password" ] && read -s -p 'password: ' password
 
-  [ -f "$output_file" ] && cat $output_file >> $archive_output_file && cat /dev/null > $output_file
-  curl -i -L -X GET -c $cookies_file -o ${output_file} $home_url && [ $? -ne 0 ] && _stderr "Cannot browse homepage ($home_url)!" && return 1
-  _token=$(grep _token ${output_file} | cut -d\" -f6) && [ -z "$_token" ] && _stderr "Cannot find toke in web page!" && return 1
-  login_url=${login_url:-$(grep action ${output_file} | grep https | cut -d\" -f8)}
-  [ -z "$login_url" ] && _stderr 'Error fetch action from page, exit!' && return 1
-  curl -i -X POST -b $cookies_file -c $cookies_file -o ${output_file} -d username=$username -d password=$password -d _token=$_token -H 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36' $login_url
-  curl -i -L -X GET -b $cookies_file -o ${output_file} $home_url
-  ! $is_silence && open ${output_file}
-  curl -i -L -X GET -b $cookies_file -o /dev/null $logout_url
+  # _curl_keep_alive
+  _selenium_keep_alive
 }
 
 
-# from tool to awsscript
+# from github to awsscript
 function sync() {
   source z_utils.zshrc
   sync_useful_tool_collections
 }
 
 
-# from awsscript to tool
+# from awsscript to github
 function restore() {
   source z_utils.zshrc
   restore_useful_tool_collections
