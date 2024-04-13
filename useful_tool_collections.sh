@@ -162,7 +162,7 @@ function keep_alive() {
   _token=$(grep _token ${output_file} | cut -d\" -f6) && [ -z "$_token" ] && _stderr "Cannot find toke in web page!" && return 1
   login_url=${login_url:-$(grep action ${output_file} | grep https | cut -d\" -f8)}
   [ -z "$login_url" ] && _stderr 'Error fetch action from page, exit!' && return 1
-  curl -i -X POST -b $cookies_file -c $cookies_file -o ${output_file} -d username=$username -d password=$password -d _token=$_token $login_url
+  curl -i -X POST -b $cookies_file -c $cookies_file -o ${output_file} -d username=$username -d password=$password -d _token=$_token -H 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36' $login_url
   curl -i -L -X GET -b $cookies_file -o ${output_file} $home_url
   ! $is_silence && open ${output_file}
   curl -i -L -X GET -b $cookies_file -o /dev/null $logout_url
