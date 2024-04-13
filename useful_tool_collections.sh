@@ -67,6 +67,7 @@ function decrypt_password() {
 # E.g. list_password
 function list_password() {
   [ ! -f "$password_file" ] && echo "Password file ($password_file) not found, exit!" && return 1
+  [ $(wc -l $password_file | awk '{print($1)}') -eq 0 ] && echo "No password in vault, exit!" && return 2
   cat $password_file | while read l
   do
     echo "$(echo $l | cut -d= -f1)=$(_mask $(echo $l | cut -d= -f2))"
@@ -136,7 +137,7 @@ EOF
 }
 
 
-# E.g. keep_alive (-s) https://aws.gilmoreglobal.com/login/en https://aws.gilmoreglobal.com/logout https://aws.gilmoreglobal.com/en  # -s: silence mode, password is managed by AWS secrets manager
+# E.g. keep_alive (-s) https://aws.gilmoreglobal.com/en/login https://aws.gilmoreglobal.com/logout https://aws.gilmoreglobal.com/en  # -s: silence mode, password is managed by AWS secrets manager
 # Note:
 # you could run it in background by putting the following into your crontab.
 # username=<username> e_password=<encrypted password> ./useful_tool_collection.sh keep_alive -s <login url> <logout url> <home url>
